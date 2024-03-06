@@ -13,10 +13,19 @@ import { useState } from 'react';
 import axios from "axios"
 import Empty from '@/components/empty';
 import Loader from '@/components/loader';
+import { cn } from '@/lib/utils';
+import UserAvatar from '@/components/user-avatar';
+import BotAvatar from '@/components/bot-avatar';
+import UserMessage from '@/components/user-message';
+import BotMessage from '@/components/bot-message';
 
+interface userPrompt {
+    user: string;
+    prompt: string;
+}
 const ConversationPage = () => {
     const router = useRouter();
-    const [messages, setMessages] = useState<string[]>([]);
+    const [messages, setMessages] = useState<userPrompt[]>([]);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -31,7 +40,8 @@ const ConversationPage = () => {
         try {
             const response = await axios.post("/api/conversation", values);
             const data = response.data;
-            setMessages(current => [...current, data]);
+            const newPrompt = { user: values.prompt, prompt: data };
+            setMessages(current => [...current, newPrompt]);
             form.reset();
             console.log("message ", messages);
         } catch (error) {
@@ -89,10 +99,21 @@ const ConversationPage = () => {
                     <div className="flex flex-col-reverse gap-y-4">
                         {
                             messages.map((message) => (
-                                <div key={message}
-                                    className='p-8 w-full flex items-center gap-x-8 rounded-lg bg-gray-100 border border-black/10'>
-                                        <h1>{}</h1>
-                                    {message}
+                                <div key={message.user}
+                                    className={cn('p-8 w-full flex gap-x-8 rounded-lg flex-col gap-y-2 text-sm')}
+                                >
+                                    {message.user && (
+                                        <UserMessage
+                                            avatarComponent={<UserAvatar />}
+                                            text={message.user}
+                                        />
+                                    )}
+                                    {message.prompt && (
+                                        <BotMessage
+                                            avatarComponent={<BotAvatar />}
+                                            text={message.prompt}
+                                        />
+                                    )}
                                 </div>
                             ))
                         }
