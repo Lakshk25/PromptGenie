@@ -1,6 +1,6 @@
 "use client";
 import Heading from '@/components/heading'
-import { MessageSquare } from 'lucide-react'
+import { Code } from 'lucide-react'
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { formSchema } from './constants';
@@ -17,13 +17,15 @@ import { cn } from '@/lib/utils';
 import UserAvatar from '@/components/user-avatar';
 import BotAvatar from '@/components/bot-avatar';
 import UserMessage from '@/components/user-message';
-import BotMessage from '@/components/bot-message';
+import ReactMarkdown from 'react-markdown';
+import SyntaxHighlighter from 'react-syntax-highlighter'
+import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 interface userPrompt {
     user: string;
     prompt: string;
 }
-const ConversationPage = () => {
+const CodePage = () => {
     const router = useRouter();
     const [messages, setMessages] = useState<userPrompt[]>([]);
 
@@ -38,7 +40,7 @@ const ConversationPage = () => {
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
-            const response = await axios.post("/api/conversation", values);
+            const response = await axios.post("/api/code", values);
             const data = response.data;
             const newPrompt = { user: values.prompt, prompt: data };
             setMessages(current => [...current, newPrompt]);
@@ -52,11 +54,11 @@ const ConversationPage = () => {
     return (
         <div>
             <Heading
-                title='Conversation'
-                description='Our most advanced conversation model.'
-                icon={MessageSquare}
-                iconColor='text-violet-500'
-                bgColor='bg-violet-500/10'
+                title='Code generation'
+                description='Generate code using descriptive text.'
+                icon={Code}
+                iconColor='text-green-700'
+                bgColor='bg-green-700/10'
             />
             <div className="px-4 lg:px-8">
                 <div>
@@ -72,7 +74,7 @@ const ConversationPage = () => {
                                             <Input
                                                 className='border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent'
                                                 disabled={isLoading}
-                                                placeholder='How do i calculate the radius of a circle?'
+                                                placeholder='How to center a div'
                                                 {...field} />
                                         </FormControl>
                                     </FormItem>
@@ -107,12 +109,26 @@ const ConversationPage = () => {
                                             text={message.user}
                                         />
                                     )}
-                                    {message.prompt && (
-                                        <BotMessage
-                                            avatarComponent={<BotAvatar />}
-                                            text={message.prompt}
-                                        />
-                                    )}
+                                    <div className="flex gap-2 bg-muted py-5 px-4 rounded-lg border">
+                                        <BotAvatar />
+                                        <ReactMarkdown
+                                            components={{
+                                                pre: ({ node, ...props }) => (
+                                                    <div className='overflow-auto w-full my-2 bg-black/10 p-2 rounded-lg'>
+                                                        <pre {...props} />
+                                                    </div>
+                                                ),
+                                                code: ({ node, ...props }) => (
+                                                    <SyntaxHighlighter language="javascript" style={a11yDark}>
+                                                        {props.children}
+                                                    </SyntaxHighlighter>
+                                                ),
+                                            }}
+                                            className="text-sm overflow-hidden leading-7 w-full"
+                                        >
+                                            {message.prompt || ""}
+                                        </ReactMarkdown>
+                                    </div>
                                 </div>
                             ))
                         }
@@ -123,4 +139,4 @@ const ConversationPage = () => {
     )
 }
 
-export default ConversationPage
+export default CodePage

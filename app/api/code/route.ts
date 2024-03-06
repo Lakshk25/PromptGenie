@@ -7,6 +7,8 @@ const MODEL_NAME = "gemini-1.0-pro";
 const API_KEY = process.env.GOOGLE_API_KEY;
 
 async function runChat(prompt: string) {
+    // const codePrompt = "You are a code generator. You must answer only in markdown code snippets. Use code comments for explanations. also add explanations if necessary" + prompt;
+
     const genAI = new GoogleGenerativeAI(API_KEY!);
     const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
@@ -67,7 +69,7 @@ export async function POST(
         return NextResponse.json(response, { status: 200 });
 
     } catch (error) {
-        console.log("[CONVERSATION_ERROR]", error);
+        console.log("[CODE_ERROR]", error);
         return new NextResponse("Internal error", { status: 500 })
     }
 }
